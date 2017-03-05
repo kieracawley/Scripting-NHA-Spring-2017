@@ -9,4 +9,8 @@ File.open("import_telephone_numbers.csv") do |csv|
 	end
 end
 
-puts formatted_numbers
+CSV.open("formatted_numbers.csv", "wb") do |csv|
+	formatted_numbers.each do |line|
+		csv << [line]
+	end
+end
