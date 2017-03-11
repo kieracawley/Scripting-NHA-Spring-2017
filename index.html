@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+		<script type="text/javascript" src="schools.json"></script>
+		<script src="https://code.jquery.com/jquery-3.1.0.js"></script>
+    <style>
+       #map {
+        height: 400px;
+        width: 400px;
+       }
+    </style>
+  </head>
+  <body>
+    <h3>My Google Maps Demo</h3>
+    <div id="map"></div>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBFVxyNPNbD1yU6dcRj3PkAk2XX3Mk8jcs&callback=initMap">
+    </script>
+		<script>
+			var map;
+			var markersAdded = 0;
+			function sleep(milliseconds) {
+			  var start = new Date().getTime();
+			  for (var i = 0; i < 1e7; i++) {
+			    if ((new Date().getTime() - start) > milliseconds){
+			      break;
+			    }
+			  }
+			}
+			function initMap() {
+				var nyc = {lat: 40.7128, lng: -74.0059};
+				map = new google.maps.Map(document.getElementById('map'),{
+					zoom: 10,
+					center: nyc
+				});
+				getSchools(map, function(map, result){
+          loop(result, map, 0, result.length);
+				});
+			}
+
+      function loop(result, map, x, length){
+        setTimeout(function () {
+          let school = result[x]
+          getCoordinates(map, school, function(map, school, coords){
+            var marker = new google.maps.Marker({
+              position: coords,
+              map: map
+          });
+        }, 100);
+        if ((x + 1) < length) {
+          loop(result, map, (x+1), length);
+        }
+      }
+
+			function getSchools(map, callback){
+				$.ajax({dataType: "json", url: "schools.json", success: function(result){
+					callback(map, result);
+				}});
+			}
+
+			function getCoordinates(map, school, callback){
+				let error = true;
+				while(!error){
+					var geocoder = new google.maps.Geocoder();
+					geocoder.geocode({'address': school["school_address"]}, function(results, status){
+						console.log(status);
+						if(status == google.maps.GeocoderStatus.OK){
+							callback(map, school, {lat: results[0].geometry.location.lat(), lng: results[0].geometry.location.lng()});
+						}
+					});
+				}
+			}
+		</script>
+  </body>
+</html>
